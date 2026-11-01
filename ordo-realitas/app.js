@@ -6,7 +6,7 @@ const STEPS = [ ['introducao','Introdução'], ['atributos','Atributos'], ['orig
 const freshState = () => ({step:'introducao', attrs:{FOR:1,AGI:1,INT:1,VIG:1,PRE:1},originId:'',originTab:'ordem',classId:'ocultista',classTab:'progressao',skillTab:'habilidades',trackId:'',custom:{origens:[],habilidades:[],rituais:[],trilhas:[],progressao:[]},profile:{nome:'',nex:'5%',aparencia:'',personalidade:'',historico:'',objetivo:'',assinatura:'',assinaturaImg:'',foto:''},options:{nex:false,municao:false,sanidade:false,patente:false},finalizado:false,initials:{},declass:false,attrPoints:4});
 let state = freshState();
 try {const saved=JSON.parse(localStorage.getItem(KEY)); if(saved&&typeof saved==='object'){
-  state={...freshState(),...saved,attrs:{...freshState().attrs,...saved.attrs},profile:{...freshState().profile,...saved.profile},options:{...freshState().options,...saved.options},custom:{...freshState().custom,...saved.custom}};
+  state={...freshState(),...saved,attrs:{...freshState().attrs,...saved.attrs},profile:{...freshState().profile,...saved.profile},options:{...freshState().options,...saved.options},custom:{...freshState().custom,...saved.custom},attrPoints:saved.attrPoints||4};
   if(!STEPS.some(a=>a[0]===state.step))state.step='introducao';
 }}catch(e){console.warn('Não foi possível ler o registro local',e);}
 const $=sel=>document.querySelector(sel);
