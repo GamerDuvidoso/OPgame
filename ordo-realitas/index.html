@@ -4,13 +4,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ordo Realitas</title>
 <meta name="theme-color" content="#0c0a09">
-<meta name="description" content="Dossiê confidencial: ficha do agente da Ordo Realitas">
+<meta name="description" content="Mesa do investigador da Ordo Realitas: ficha, bestiário, diário, comunicador e arquivo">
 <link rel="icon" type="image/png" href="assets/emblema-pequeno.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Stardos+Stencil:wght@700&family=Herr+Von+Muellerhoff&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Stardos+Stencil:wght@700&family=Herr+Von+Muellerhoff&family=Mrs+Saint+Delafield&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="estilo.css">
 <link rel="stylesheet" href="imersao.css">
+<link rel="stylesheet" href="mesa.css">
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
@@ -26,8 +27,8 @@
   <div class="control-bar">
     <span id="save-status">REGISTRO LOCAL • SALVO AUTOMATICAMENTE</span>
     <span class="bar-actions">
-      <button type="button" id="sound-toggle" aria-pressed="true">♪ SOM: LIGADO</button>
-      <button type="button" id="close-dossier">▣ FECHAR DOSSIÊ</button>
+      <button type="button" data-sound aria-pressed="true">♪ SOM: LIGADO</button>
+      <button type="button" id="close-dossier">▣ VOLTAR À MESA</button>
       <button type="button" id="open-customizer" aria-haspopup="dialog">⚙ ADENDOS</button>
     </span>
   </div>
@@ -57,10 +58,13 @@
   <p class="mini-note">Para editar os textos originais, abra <code>dados.js</code>. Para editar aparência e medidas, abra <code>estilo.css</code> e <code>imersao.css</code>.</p>
 </dialog>
 
-<!-- Capa: dossiê fechado sobre a mesa -->
+<!-- Mesa do investigador: cada objeto abre um módulo -->
 <div id="cover">
-  <div class="scene">
-    <div class="folder" id="folder" role="button" tabindex="0" aria-label="Abrir o dossiê confidencial">
+  <button type="button" class="desk-sound" data-sound aria-pressed="true">♪ SOM: LIGADO</button>
+  <div class="scene" id="scene">
+    <div class="desk-items">
+      <div class="obj obj-ficha">
+        <div class="folder" id="folder" role="button" tabindex="0" aria-label="Abrir o dossiê confidencial">
       <div class="folder-inside"><i></i><i></i><i></i></div>
       <div class="folder-front">
         <div class="ff">
@@ -75,8 +79,51 @@
         <div class="fb"></div>
       </div>
     </div>
-    <p class="cover-hint">Toque no dossiê para abri-lo</p>
+        <span class="tag">FICHA DO AGENTE</span>
+      </div>
+      <button type="button" class="obj obj-bestiario" data-open="bestiario" aria-label="Abrir o Bestiário">
+        <span class="bf-back"></span>
+        <img class="bf-photo p1" src="criaturas/zumbisangue1.webp" alt="">
+        <img class="bf-photo p2" src="criaturas/bestialsangue1.webp" alt="">
+        <span class="bf-front"><b>BESTIÁRIO</b><i>ARQUIVO X-07</i></span>
+        <span class="bf-stamp">RESTRITO</span>
+        <span class="tag">BESTIÁRIO</span>
+      </button>
+      <button type="button" class="obj obj-notas" data-open="notas" aria-label="Abrir o Diário de campo">
+        <span class="nb-cover"><i class="nb-band"></i><span class="nb-label">DIÁRIO<br>DE CAMPO</span></span>
+        <span class="nb-pen"></span>
+        <span class="tag">DIÁRIO</span>
+      </button>
+      <button type="button" class="obj obj-chats" data-open="chats" aria-label="Abrir o Comunicador">
+        <span class="ph-body"><span class="ph-screen"><em>CENTRAL</em><u>novas mensagens</u></span></span>
+        <span class="badge" id="chat-badge">2</span>
+        <span class="tag">COMUNICADOR</span>
+      </button>
+      <button type="button" class="obj obj-arquivo" data-open="arquivo" aria-label="Abrir o Arquivo de pesquisa e log">
+        <span class="ab-cards"><i></i><i></i><i></i><i></i></span>
+        <span class="ab-front"><span class="ab-label">PESQUISA · LOG</span><span class="ab-knob"></span></span>
+        <span class="tag">ARQUIVO</span>
+      </button>
+      <div class="obj locked obj-mapa" data-locked="Mapa" role="img" aria-label="Mapa, em breve"><span class="tube"></span><span class="tag">MAPA · EM BREVE</span></div>
+      <div class="obj locked obj-maleta" data-locked="Inventário" role="img" aria-label="Inventário, em breve"><span class="case"></span><span class="tag">INVENTÁRIO · EM BREVE</span></div>
+    </div>
+    <p class="cover-hint">Escolha um objeto sobre a mesa</p>
   </div>
+</div>
+
+<!-- Módulos (Bestiário, Diário, Comunicador, Arquivo) -->
+<div id="view" hidden>
+  <div class="view-bar">
+    <button type="button" id="view-back">◀ VOLTAR À MESA</button>
+    <span id="view-title"></span>
+    <button type="button" data-sound aria-pressed="true">♪ SOM: LIGADO</button>
+  </div>
+  <div class="view-body" id="view-body"></div>
+</div>
+
+<!-- Lâmpada apagada: primeiro clique acende e libera o áudio -->
+<div id="poweron" role="button" tabindex="0" aria-label="Acender a lâmpada">
+  <div class="po-inner"><img src="assets/emblema-pequeno.png" alt=""><p>SALA 7 · ORDO REALITAS</p><p class="po-hint">Clique para acender a lâmpada</p></div>
 </div>
 
 <!-- Final cinematográfico -->
@@ -86,7 +133,7 @@
     <div id="finale-lines" aria-live="polite"></div>
     <div id="finale-actions" hidden>
       <button type="button" id="finale-back">REVER A FICHA</button>
-      <button type="button" id="finale-close">FECHAR O DOSSIÊ</button>
+      <button type="button" id="finale-close">VOLTAR À MESA</button>
     </div>
   </div>
 </div>
@@ -98,4 +145,5 @@
 
 <script src="dados.js"></script>
 <script src="imersao.js"></script>
+<script src="mesa.js"></script>
 <script src="app.js"></script>

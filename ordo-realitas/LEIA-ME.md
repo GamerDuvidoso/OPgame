@@ -50,3 +50,17 @@ O projeto pode ser publicado em hospedagens estáticas como GitHub Pages, Netlif
 - `imersao.js` / `imersao.css`: capa do dossiê, virada de página 3D, assinaturas e rubricas com caneta (mouse, toque ou stylus), carimbos, texto censurado clicável, máquina de escrever, lâmpada que segue o cursor, poeira, apagões ocasionais, som sintetizado (botão SOM) e o final cinematográfico.
 - Setas ← → do teclado viram a página.
 - Para abrir localmente use o `index.html` (já inclui as metas necessárias).
+
+## Mesa do investigador (hub do sistema)
+
+A tela inicial agora é uma mesa. O dossiê de criação de personagem virou apenas o objeto **Ficha do Agente**; os outros objetos abrem módulos:
+
+- **Bestiário** (`criaturas/` + lista `BESTIARIO_BASE` no topo de `mesa.js`): fotos presas na cortiça e ficha de cada criatura. Dá para arquivar novos registros com foto pelo próprio site. Os nomes das três criaturas foram deduzidos dos nomes dos arquivos; ajuste em `mesa.js` e preencha `descricao`.
+- **Diário de campo**: páginas com texto e rabisco a caneta, salvas no navegador.
+- **Comunicador**: chat local e simulado (Central, Narrador, Equipe Alfa) com rolagem de dados (`/r 2d6+3`). Para ligar a um servidor real, troque as funções `responder` e `pushMsg` em `mesa.js`.
+- **Arquivo**: pesquisa em origens, classes, habilidades, trilhas, criaturas e diário; e o log de atividades do agente.
+- **Mapa** e **Inventário** aparecem trancados ("em breve").
+
+Dados da mesa ficam em `localStorage` na chave `ordo-realitas-mesa-v1` (a ficha continua em `ordo-realitas-ficha-v1`).
+
+**Fluxo de entrada:** o primeiro acesso mostra só o dossiê (Ficha do Agente). Ao autenticar o documento e voltar, a mesa é liberada com os outros objetos. Quem já autenticou abre direto na mesa, com a lâmpada apagada. Para testar de novo o começo, use REDEFINIR em ADENDOS ou limpe o armazenamento do navegador.

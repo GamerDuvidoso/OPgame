@@ -3,7 +3,7 @@
 const D = window.ORDO_DADOS;
 const KEY = 'ordo-realitas-ficha-v1';
 const STEPS = [ ['introducao','Introdução'], ['atributos','Atributos'], ['origem','Origem'], ['classe','Classe'], ['autenticacao','Autenticação'] ];
-const freshState = () => ({step:'introducao', attrs:{FOR:1,AGI:1,INT:1,VIG:1,PRE:1},originId:'',originTab:'ordem',classId:'ocultista',classTab:'progressao',skillTab:'habilidades',trackId:'',custom:{origens:[],habilidades:[],rituais:[],trilhas:[],progressao:[]},profile:{nome:'',nex:'X%',aparencia:'',personalidade:'',historico:'',objetivo:'',assinatura:'',assinaturaImg:'',foto:''},options:{nex:false,municao:false,sanidade:false,patente:false},finalizado:false,initials:{},declass:false});
+const freshState = () => ({step:'introducao', attrs:{FOR:1,AGI:1,INT:1,VIG:1,PRE:1},originId:'',originTab:'ordem',classId:'ocultista',classTab:'progressao',skillTab:'habilidades',trackId:'',custom:{origens:[],habilidades:[],rituais:[],trilhas:[],progressao:[]},profile:{nome:'',nex:'5%',aparencia:'',personalidade:'',historico:'',objetivo:'',assinatura:'',assinaturaImg:'',foto:''},options:{nex:false,municao:false,sanidade:false,patente:false},finalizado:false,initials:{},declass:false});
 let state = freshState();
 try {const saved=JSON.parse(localStorage.getItem(KEY)); if(saved&&typeof saved==='object'){
   state={...freshState(),...saved,attrs:{...freshState().attrs,...saved.attrs},profile:{...freshState().profile,...saved.profile},options:{...freshState().options,...saved.options},custom:{...freshState().custom,...saved.custom}};
@@ -64,23 +64,26 @@ if(id==='ordem'){
 if(!state.originId || state.originId!==id)return `<section class="confidential"><div class="stamp">CONFIDENCIAL</div><p>${e((found?.estado)||'ARQUIVO RESTRITO')}</p><button type="button" class="secret-select" data-select-origin="${e(id)}" style="font-size:12px;background:#170e0f;color:#eac6ab;border:0;padding:11px;margin-top:15px">SELECIONAR ORIGEM</button></section>`;
 return `<section class="confidential origin-info-box"><h2>${e(found?.nome)}</h2><p>${e(found?.descricao)}</p><h3>PERÍCIAS TREINADAS</h3><p>${e(found?.pericias)}</p><h3>PODER DE ORIGEM</h3><p>${e(found?.poder)}</p><button type="button" data-select-origin="${e(id)}">ORIGEM SELECIONADA ✓</button></section>`;}
 const CLASSES=['combatente','especialista','ocultista'];
-const currentClass=()=>D.classes[state.classId]||D.classes.ocultista;
+const currentClass=()=>state.classId?D.classes[state.classId]:{nome:'Sem Classe',progressao:[],habilidades:[],rituais:[],trilhas:[]};
 function progression(){const c=currentClass();const arr=c.progressao||[];
+if(!state.classId)return `<div class="progress-grid"><p class="not-set">Sem classe selecionada — sem progressão definida.</p></div>`;
 return `<div class="progress-grid"><div class="progress-th">NEX</div><div class="progress-th">PROGRESSÃO: ${e(c.nome.toUpperCase())}</div><div class="progress-th">PE</div>
 ${Array.from({length:20},(_,i)=>{const nex=i===19?'99%':(i+1)*5+'%';const override=(state.custom.progressao||[]).find(p=>p.classId===state.classId&&p.nex===nex);const label=override?.nome||arr[i];return `<div class="progress-row"><div class="progress-cell"><span class="progress-box">${nex}</span></div><div class="progress-cell center">${label?e(label):'<span class="not-set">A definir (adendo)</span>'}</div><div class="progress-cell"><span class="progress-box">${i+1}</span></div></div>`;}).join('')}</div>`;}
 function libraryItems(type){const c=currentClass();const arr=c[type]||[];const extras=(state.custom[type]||[]).filter(a=>a.classId===state.classId);return [...arr,...extras];}
 function abilities(){const key=state.skillTab==='rituais'?'rituais':'habilidades';const list=libraryItems(key);
+if(!state.classId)return `<section class="library-content"><h2>${key==='rituais'?'RITUAIS':'HABILIDADES'}: SEM CLASSE</h2><p>Sem classe selecionada — sem habilidades ou rituais disponíveis.</p></section>`;
 return `<section class="library-content"><h2>${key==='rituais'?'RITUAIS':'HABILIDADES'}: ${e(currentClass().nome.toUpperCase())}</h2><p>Consulte os registros da sua classe. Acrescente novas entradas em <b>ADENDOS</b>.</p><div class="library-subtabs"><button data-skill-tab="habilidades" class="${key==='habilidades'?'active':''}">HABILIDADES</button><button data-skill-tab="rituais" class="${key==='rituais'?'active':''}">RITUAIS</button></div>
 ${list.length?`<div class="trail-powers">${list.map((item,i)=>`<div class="trail-power-item" data-ability-index="${i}"><div class="trail-power-header" data-toggle-ability="${i}"><span class="trail-power-title">${e(item.nome||item.name)}</span><span class="trail-power-chevron">▼</span></div><div class="trail-power-content"><div class="trail-power-content-inner">${item.circle?`<small>${e(item.circle)}</small>`:''}<p>${e(item.descricao||item.description)}</p></div></div></div>`).join('')}</div>`:`<div class="ability-card"><h3>NENHUM ${key==='rituais'?'RITUAL':'REGISTRO'} CADASTRADO</h3><p>Este arquivo está livre para receber os seus adendos.</p></div>`}</section>`;}
 function tracks(){const tracks=libraryItems('trilhas');const current=tracks.find(x=>(x.id||x.nome||x.name)===state.trackId)||tracks[0];
+if(!state.classId)return `<section class="library-content"><h2>TRILHAS: SEM CLASSE</h2><p>Sem classe selecionada — sem trilhas disponíveis.</p></section>`;
 const parseTrailPowers=(desc)=>{if(!desc)return{intro:'',powers:[]};const parts=desc.split('\n\n');const intro=parts[0]||'';const powers=[];for(let i=1;i<parts.length;i++){const part=parts[i].trim();if(part){const titleMatch=part.match(/^NEX \d+% - (.+?): /);const nexMatch=part.match(/^NEX \d+%/m);const nex=nexMatch?nexMatch[0]:'NEX ?%';const title=titleMatch?titleMatch[1]:part.split('\n')[0];const content=part.replace(/^NEX \d+% - .+?: /,'').trim();powers.push({nex,title,content});}}return{intro,powers};};
 const parsed=parseTrailPowers(current?.descricao||current?.description);
 return `<section class="library-content"><h2>TRILHAS: ${e(currentClass().nome.toUpperCase())}</h2><p>Escolha uma trilha para ver seus registros. Você pode adicionar ou detalhar as trilhas posteriormente.</p>${tracks.length?`<div class="trail-tabs">${tracks.map(t=>{const id=t.id||t.nome||t.name;return `<button data-track="${e(id)}" class="${id===(state.trackId||tracks[0]?.nome)?'active':''}">${e(t.nome||t.name)}</button>`;}).join('')}</div><div class="trail-detail"><h2>${e(current.nome||current.name)}</h2><p>${e(parsed.intro)}</p><div class="trail-powers">${parsed.powers.map((p,i)=>`<div class="trail-power-item" data-power-index="${i}"><div class="trail-power-header" data-toggle-power="${i}"><span class="trail-power-title">${e(p.nex)} - ${e(p.title)}</span><span class="trail-power-chevron">▼</span></div><div class="trail-power-content"><div class="trail-power-content-inner"><p>${e(p.content)}</p></div></div></div>`).join('')}</div></div>`:`<div class="ability-card"><h3>TRILHAS A DEFINIR</h3><p>Insira as trilhas desta classe pelo painel ADENDOS.</p></div>`}</section>`;}
 function classPage(){const c=currentClass();return `<article class="paper class-intro">${head()}<h2 class="type-title">CLASSE SELECIONADA: <span class="red">${e(c.nome)}</span></h2><div class="rule-dash"></div>
 <div class="origin-hint">Sua classe indica o treinamento que você deseja receber na Ordem para enfrentar os perigos do Outro Lado.</div>
 <p>Essa será sua característica mais importante, pois define o que você faz e qual é o seu papel no grupo de investigadores.</p><p>Confira abaixo as perícias treinadas e as proficiências da classe. As escolhas específicas de perícias poderão ser configuradas em uma expansão futura.</p>
-<div class="class-tabs">${CLASSES.map(id=>`<button type="button" data-class="${id}" class="${state.classId===id?'active':''}">${e(D.classes[id].nome.toUpperCase())}</button>`).join('')}<button type="button" class="class-more" title="Ver habilidades" data-class-tab="habilidades">›</button></div>
-<div class="class-description" tabindex="0" aria-label="Características da classe. Role o painel para ver sanidade, perícias e proficiências."><p>${e(c.descricao)}</p><h3>CARACTERÍSTICAS <span class="class-scroll-cue">↓ ROLE PARA VER MAIS</span></h3><div class="rule-dash"></div>
+<div class="class-tabs"><button type="button" data-class="" class="${!state.classId?'active':''}">SEM CLASSE</button>${CLASSES.map(id=>`<button type="button" data-class="${id}" class="${state.classId===id?'active':''}">${e(D.classes[id].nome.toUpperCase())}</button>`).join('')}<button type="button" class="class-more" title="Ver habilidades" data-class-tab="habilidades">›</button></div>
+${state.classId?`<div class="class-description" tabindex="0" aria-label="Características da classe. Role o painel para ver sanidade, perícias e proficiências."><p>${e(c.descricao)}</p><h3>CARACTERÍSTICAS <span class="class-scroll-cue">↓ ROLE PARA VER MAIS</span></h3><div class="rule-dash"></div>
 <div class="class-stat-grid"><div>Pontos de<br>Vida Iniciais<br><strong>${e(c.pv)}</strong></div><div>A cada novo<br>nível de exposição<br><strong>${e(c.pvNivel)}</strong></div></div><div class="rule-dash" style="margin:5px 0 12px"></div>
 <div class="class-stat-grid"><div>Pontos de<br>Esforço Iniciais<br><strong>${e(c.pe)}</strong></div><div>A cada novo<br>nível de exposição<br><strong>${e(c.peNivel)}</strong></div></div><div class="rule-dash" style="margin:5px 0 12px"></div>
 <div class="class-stat-grid"><div>Sanidade<br>Inicial<br><strong>${e(c.san)}</strong></div><div>A cada novo<br>nível de exposição<br><strong>${e(c.sanNivel)}</strong></div></div><div class="rule-dash" style="margin:9px 0 12px"></div>
@@ -88,31 +91,14 @@ function classPage(){const c=currentClass();return `<article class="paper class-
 <p class="class-count">INTELECTO ATUAL: ${e(state.attrs.INT)} ${typeof c.periciasExtrasBase==='number'?`• PERÍCIAS À ESCOLHA: ${c.periciasExtrasBase+state.attrs.INT}`:''}</p>
 <div class="rule-dash" style="margin:9px 0 12px"></div>
 <h3>PROFICIÊNCIAS</h3><p class="class-rule-text">${e(c.proficiencias)}</p>
-<p class="class-help">Os detalhes de perícias e as escolhas específicas de habilidades poderão ser acrescentados em novos adendos.</p></div>
+<p class="class-help">Os detalhes de perícias e as escolhas específicas de habilidades poderão ser acrescentados em novos adendos.</p></div>`:'<div class="class-description"><p>Você não recebe treinamento específico da Ordo Realitas. Começa com NEX 0% e não tem acesso a habilidades, rituais ou trilhas de classe.</p></div>'}
 </article><div class="class-library"><div class="library-tabs"><button type="button" data-class-tab="progressao" class="${state.classTab==='progressao'?'active':''}">PROGRESSÃO</button><button type="button" data-class-tab="habilidades" class="${state.classTab==='habilidades'?'active':''}">HABILIDADES</button><button type="button" data-class-tab="trilhas" class="${state.classTab==='trilhas'?'active':''}">TRILHAS</button></div><section class="library-paper">${state.classTab==='progressao'?progression():state.classTab==='habilidades'?abilities():tracks()}</section></div>`;}
-function desktop(){const now=new Date();const time=now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-const icons=[
-  {id:'chats',name:'Chats',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-.7 5.4 8 8 0 0 1-3.4 4 8 8 0 0 1-8 0 8 8 0 0 1-4-3.4 8.5 8.5 0 0 1-5.4-.7 8.38 8.38 0 0 1-3.8-.9L3 21"/><path d="M3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 .7-5.4 8 8 0 0 1 3.4-4 8 8 0 0 1 8 0 8 8 0 0 1 4 3.4 8.5 8.5 0 0 1 5.4.7 8.38 8.38 0 0 1 3.8.9L3 21"/></svg>'},
-  {id:'notas',name:'Notas',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14.5 2 14.5 8 20.5 8"/><line x1="16.5" y1="13" x2="8.5" y2="13"/><line x1="16.5" y1="17" x2="8.5" y2="17"/><line x1="8.5" y1="9" x2="16.5" y2="9"/></svg>'},
-  {id:'bestiario',name:'Bestiário',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg>'},
-  {id:'ficha',name:'Ficha',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><polyline points="9 13 12 14 15 9"/><polyline points="9 17 12 18 15 17"/></svg>'},
-  {id:'log',name:'Log',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="4 17 10 11 4 17"/><line x1="12" y1="19" x2="20" y2="19"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="12" y1="7" x2="12" y2="7"/><line x1="12" y1="3" x2="12" y2="3"/></svg>'},
-  {id:'pesquisa',name:'Pesquisa',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="7" y1="11" x2="11" y2="11"/></svg>'}
-];
-const bootText=[
-  `ARQUIVO Nº ${e(D.documento)}`,
-  'Verificando assinatura...',
-  'Assinatura confirmada.',
-  'Registrando identidade na base da Ordo Realitas...',
-  `AGENTE: ${e(state.profile.nome||'NÃO IDENTIFICADO')}|`
-];
-return `<article class="terminal-desktop"><div class="terminal-header"><h2>ORDO REALITAS • TERMINAL</h2><span class="terminal-time">${time}</span></div><div class="terminal-boot">${bootText.map((line,i)=>`<div class="boot-line">${e(line)}${i===bootText.length-1?'<span class="cursor">|</span>':''}</div>`).join('')}</div><div class="terminal-content">${icons.map(icon=>`<div class="terminal-icon" data-app="${e(icon.id)}">${icon.svg}<span>${e(icon.name)}</span></div>`).join('')}</div><div class="terminal-statusbar"><span>CONECTADO</span> • <span>NEX: ${e(state.profile.nex)}</span></div></article>`;}
 function auth(){const origin=getOrigin();const foto=state.profile.foto;
 return `<article class="paper auth-form">${head()}<h2 class="auth-section-title">REGRAS OPCIONAIS</h2><div class="auth-dash"></div>
 <div class="options-grid">${[['nex','NEX & EXPERIÊNCIA'],['municao','CONTAGEM DE MUNIÇÃO'],['sanidade','JOGANDO SEM SANIDADE'],['patente','EVOLUÇÃO POR PATENTE']].map(([id,label])=>`<label class="option"><span>${label}</span><input type="checkbox" data-option="${id}" ${state.options[id]?'checked':''}></label>`).join('')}</div>
 <h2 class="auth-section-title">SOBRE O AGENTE</h2><div class="auth-dash"></div>
 ${[['aparencia','Aparência'],['personalidade','Personalidade'],['historico','Histórico'],['objetivo','Objetivo']].map(([key,label])=>`<label class="profile-field">${label}<textarea data-profile="${key}" rows="4" placeholder="Escreva aqui.">${e(state.profile[key])}</textarea></label>`).join('')}</article>
-<article class="paper auth-summary">${head()}<section class="agent-id"><label class="photo-slot" title="Clique para colocar uma foto">${foto?`<img src="${e(foto)}" alt="Foto do agente">`:'Sua foto aqui'}<input id="agent-photo" type="file" accept="image/png,image/jpeg,image/webp"></label><div class="agent-fields"><label><b>NEX:</b><input data-profile="nex" value="${e(state.profile.nex)}" aria-label="NEX"></label><label><b>Nome:</b><input data-profile="nome" value="${e(state.profile.nome)}" placeholder="Seu nome aqui."></label><label><b>Origem:</b><select data-origin-select="1"><option value="">Sua origem aqui.</option>${allOrigins().map(o=>`<option value="${e(o.id)}" ${state.originId===o.id?'selected':''}>${e(o.nome)}</option>`).join('')}</select></label><label><b>Classe:</b><select data-class-select="1">${CLASSES.map(id=>`<option value="${id}" ${state.classId===id?'selected':''}>${e(D.classes[id].nome)}</option>`).join('')}</select></label></div></section>
+<article class="paper auth-summary">${head()}<section class="agent-id"><label class="photo-slot" title="Clique para colocar uma foto">${foto?`<img src="${e(foto)}" alt="Foto do agente">`:'Sua foto aqui'}<input id="agent-photo" type="file" accept="image/png,image/jpeg,image/webp"></label><div class="agent-fields"><label><b>NEX:</b><select data-profile="nex" aria-label="NEX">${['5%','10%','15%','20%'].map(n=>`<option value="${n}" ${state.profile.nex===n?'selected':''}>${n}</option>`).join('')}</select></label><label><b>Nome:</b><input data-profile="nome" value="${e(state.profile.nome)}" placeholder="Seu nome aqui."></label><label><b>Origem:</b><select data-origin-select="1"><option value="">Sua origem aqui.</option>${allOrigins().map(o=>`<option value="${e(o.id)}" ${state.originId===o.id?'selected':''}>${e(o.nome)}</option>`).join('')}</select></label><label><b>Classe:</b><select data-class-select="1"><option value="">Sem Classe</option>${CLASSES.map(id=>`<option value="${id}" ${state.classId===id?'selected':''}>${e(D.classes[id].nome)}</option>`).join('')}</select></label></div></section>
 <h2 class="type-title agent-attr-title">SEUS ATRIBUTOS</h2><div class="rule-dash" style="margin-bottom:13px"></div>${radar(false)}
 <div class="sig-block"><canvas class="sig-canvas" data-sigpad="1" aria-label="Assinatura do agente: desenhe com mouse, dedo ou caneta"></canvas><span class="sig-x">✕</span><button type="button" class="sig-clear" data-sig-clear="1">REFAZER</button></div><p class="signature-label">Assine aqui com a caneta para finalizar</p>
 <div class="countersign" ${state.finalizado?'':'hidden'}>${FX.sigSVG('diretor').replace('data-sig','data-final="1" data-sig')}<small>Autorizado • Diretor da Ordo Realitas</small></div>
@@ -127,23 +113,18 @@ function go(id){if(id===state.step||FX.isTurning())return;const order=STEPS.map(
 let finalizing=false;
 async function finalize(){if(finalizing)return;if(!state.profile.nome.trim()){toast('Preencha o nome do agente antes de finalizar.');return;}if(!state.profile.assinaturaImg){toast('Assine o documento com a caneta antes de finalizar.');return;}
 finalizing=true;const stage=$('#stage');const cs=stage.querySelector('.countersign');
-await FX.authenticate(stage,state);state.finalizado=true;save();const b=stage.querySelector('.finalize');if(b)b.textContent='DOCUMENTO AUTENTICADO ✓';
+await FX.authenticate(stage,state);state.finalizado=true;save();window.Mesa&&Mesa.log('Documento autenticado: agente '+state.profile.nome);const b=stage.querySelector('.finalize');if(b)b.textContent='DOCUMENTO AUTENTICADO ✓';
 FX.updateCover({doc:D.documento,finalizado:true,nome:state.profile.nome});
-await FX.finale(state,D,currentClass().nome,getOrigin()?.nome);
-finalizing=false;
-showDesktopOverlay();
-setTimeout(()=>{if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen();else if(document.documentElement.webkitRequestFullscreen)document.documentElement.webkitRequestFullscreen();},1000);}
-function showDesktopOverlay(){const overlay=document.createElement('div');overlay.className='desktop-overlay';overlay.innerHTML=desktop();overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:#000';document.body.appendChild(overlay);
-overlay.querySelectorAll('.terminal-icon').forEach(icon=>icon.addEventListener('click',()=>{if(icon.dataset.app==='ficha'){overlay.remove();document.body.classList.remove('no-scroll');document.body.style.overflow='';}}));
-document.body.classList.add('no-scroll');document.body.style.overflow='hidden';}
-function selectOrigin(id){state.originId=id;state.originTab=id;render();}
+await FX.finale(state,D,currentClass().nome,getOrigin()?.nome);finalizing=false;
+window.Mesa&&Mesa.onClose();}
+function selectOrigin(id){state.originId=id;state.originTab=id;render();const o=getOrigin();window.Mesa&&Mesa.log('Origem registrada: '+(o?o.nome:id));}
 document.addEventListener('click',ev=>{const btn=ev.target.closest('button');if(!btn || btn.closest('#customizer'))return;
 if(btn.dataset.go){go(btn.dataset.go);}
 else if(btn.dataset.statUp)changeStat(btn.dataset.statUp,1);
 else if(btn.dataset.statDown)changeStat(btn.dataset.statDown,-1);
 else if(btn.dataset.originTab){state.originTab=btn.dataset.originTab;render();}
 else if(btn.dataset.selectOrigin){selectOrigin(btn.dataset.selectOrigin);}
-else if(btn.dataset.class){state.classId=btn.dataset.class;state.trackId='';render();}
+else if(btn.dataset.class){state.classId=btn.dataset.class;state.trackId='';render();window.Mesa&&Mesa.log('Classe selecionada: '+currentClass().nome);}
 else if(btn.dataset.classTab){state.classTab=btn.dataset.classTab;render();}
 else if(btn.dataset.skillTab){state.skillTab=btn.dataset.skillTab;render();}
 else if(btn.dataset.track){state.trackId=btn.dataset.track;render();}
@@ -166,7 +147,7 @@ document.addEventListener('change',ev=>{const el=ev.target;
 if(el.dataset.option){state.options[el.dataset.option]=el.checked;save();}
 if(el.dataset.originSelect){state.originId=el.value;state.originTab=el.value||'ordem';render();}
 if(el.dataset.originSelectDropdown){state.originId=el.value;state.originTab=el.value||'ordem';render();}
-if(el.dataset.classSelect){state.classId=el.value;render();}
+if(el.dataset.classSelect){const newClass=el.value;if(!newClass){state.classId='';state.profile.nex='0%';}else{state.classId=newClass;if(state.profile.nex==='0%')state.profile.nex='5%';}state.trackId='';render();save();}
 if(el.id==='agent-photo'&&el.files?.[0]){const file=el.files[0];if(file.size>3*1024*1024){toast('Escolha uma imagem menor que 3 MB.');return;}const reader=new FileReader();reader.onload=()=>{state.profile.foto=String(reader.result);render();};reader.readAsDataURL(file);}
 });
 // ADENDOS — dados personalizados sem alteração do layout base
@@ -186,6 +167,7 @@ $('#custom-list').addEventListener('click',ev=>{const btn=ev.target.closest('[da
 $('#export-data').onclick=()=>{const blob=new Blob([JSON.stringify({app:'ORDO REALITAS',versao:1,salvoEm:new Date().toISOString(),ficha:state},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ordo-realitas-ficha.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 $('#import-data').onchange=async ev=>{const f=ev.target.files?.[0];if(!f)return;try{const content=JSON.parse(await f.text()),incoming=content.ficha||content;if(!incoming.attrs||!incoming.profile||!incoming.custom)throw new Error('Formato inválido.');state={...freshState(),...incoming,attrs:{...freshState().attrs,...incoming.attrs},profile:{...freshState().profile,...incoming.profile},options:{...freshState().options,...incoming.options},custom:{...freshState().custom,...incoming.custom}};save();render();showCustomList();toast('Ficha importada com sucesso.');}catch(err){toast('Arquivo de ficha inválido: '+err.message);}ev.target.value='';};
 let resetArm=0;$('#reset-data').onclick=()=>{const b=$('#reset-data');if(!resetArm){b.textContent='CLIQUE DE NOVO PARA APAGAR TUDO';resetArm=setTimeout(()=>{resetArm=0;b.textContent='REDEFINIR';},4000);return;}clearTimeout(resetArm);resetArm=0;b.textContent='REDEFINIR';state=freshState();save();render();showCustomList();modal.close();};
+window.OrdoApp={D,getState:()=>state,goto(step,o={}){if(o.originId){state.originId=o.originId;state.originTab=o.originId;}state.step=step;render({fresh:true});}};
 FX.onOpen(first=>{render({fresh:true});if(first&&state.step==='introducao'&&!state.finalizado)FX.typewrite($('.intro-terms')||document.body);});
 render();
 })();

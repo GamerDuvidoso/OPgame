@@ -51,6 +51,7 @@ const sfx = {
   open() { tone(62, 98, 1.0, { type: 'sawtooth', gain: .05, lp: 280 }); burst(1.1, { f: 400, fTo: 2200, q: .6, gain: .16, attack: .4 }); burst(.2, { type: 'lowpass', f: 500, gain: .35, delay: 1.0 }); },
   declass() { burst(.5, { f: 3000, fTo: 1200, q: 2, gain: .16, attack: .05 }); tone(70, 55, .4, { gain: .12, lp: 200 }); },
   buzz() { tone(100, 98, .5, { type: 'square', gain: .05, lp: 600 }); burst(.5, { type: 'highpass', f: 4000, gain: .05 }); },
+  ping() { tone(880, 880, .12, { gain: .12 }); tone(1320, 1320, .22, { gain: .1, delay: .12 }); },
   thump() { tone(70, 32, .6, { gain: .35, lp: 200 }); },
   seal() { tone(90, 40, .5, { gain: .7, lp: 300 }); burst(.4, { type: 'lowpass', f: 400, gain: .3 }); tone(520, 520, 1.6, { gain: .035, delay: .1 }); tone(784, 784, 1.8, { gain: .025, delay: .1 }); },
   penStart() {
@@ -126,7 +127,9 @@ function updateCover(info) {
 }
 async function openDossier() {
   if (!cover || cover.classList.contains('opening')) return;
-  cover.classList.add('opening'); audio(); sfx.open(); sfx.startAmbient();
+  const sc = $('#scene'), fr = $('#folder').getBoundingClientRect(), sr = sc.getBoundingClientRect();
+  sc.style.transformOrigin = `${fr.left + fr.width / 2 - sr.left}px ${fr.top + fr.height / 2 - sr.top}px`;
+  cover.classList.add('opening'); audio(); sfx.open(); sfx.startAmbient(); window.Mesa && Mesa.log(firstOpen ? 'Dossiê aberto pela primeira vez nesta sessão' : 'Dossiê reaberto');
   await sleep(reduced ? 100 : 1500); cover.classList.add('zoom');
   await sleep(reduced ? 100 : 1300);
   cover.hidden = true; cover.classList.remove('opening', 'zoom');
@@ -135,11 +138,12 @@ async function openDossier() {
   onOpen(firstOpen); firstOpen = false;
 }
 function closeDossier() {
-  if (!cover) return;
+  if (!cover) return; window.Mesa && Mesa.log('Dossiê fechado');
   sfx.open(); cover.hidden = false; cover.classList.remove('opening', 'zoom'); cover.classList.add('closing');
   document.body.classList.remove('is-open'); document.body.classList.add('is-closed');
   setTimeout(() => cover.classList.remove('closing'), 900);
   clearTimeout(blackoutTimer);
+  window.Mesa && Mesa.onClose && Mesa.onClose();
 }
 if (cover) {
   const trigger = $('#folder', cover);
@@ -149,9 +153,9 @@ if (cover) {
 }
 
 /* ============ TOGGLE DE SOM ============ */
-function paintSound() { const b = $('#sound-toggle'); if (b) { b.textContent = soundOn ? '♪ SOM: LIGADO' : '♪ SOM: MUDO'; b.setAttribute('aria-pressed', String(soundOn)); } }
+function paintSound() { document.querySelectorAll('[data-sound]').forEach(b => { b.textContent = soundOn ? '♪ SOM: LIGADO' : '♪ SOM: MUDO'; b.setAttribute('aria-pressed', String(soundOn)); }); }
 document.addEventListener('click', e => {
-  const b = e.target.closest('#sound-toggle');
+  const b = e.target.closest('[data-sound]');
   if (b) { soundOn = !soundOn; store.set('ordo-som', soundOn ? '1' : '0'); if (soundOn) { audio(); sfx.tick(); sfx.startAmbient(); } else { sfx.stopAmbient(); } paintSound(); return; }
   if (e.target.closest('#close-dossier')) { closeDossier(); return; }
   const btn = e.target.closest('button, .redacted'); if (btn) sfx.tick();
@@ -382,6 +386,6 @@ async function authenticate(stage, st) {
   await sleep(1400);
 }
 
-window.FX = { sfx, toast, turn, decorate, arrive, pad, sigSVG, autoSign, updateCover, finale, authenticate, closeDossier, typewrite,
+window.FX = { openDossier, sfx, toast, turn, decorate, arrive, pad, sigSVG, autoSign, updateCover, finale, authenticate, closeDossier, typewrite,
   onOpen(fn) { onOpen = fn; }, isTurning: () => turning, padsEmpty: () => padRefs.length ? padRefs[padRefs.length - 1].isEmpty() : true };
 })();
