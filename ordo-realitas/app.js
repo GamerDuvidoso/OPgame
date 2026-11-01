@@ -1,7 +1,6 @@
 (() => {
 'use strict';
 const D = window.ORDO_DADOS;
-console.log('ORDO_DADOS carregado:', D);
 const KEY = 'ordo-realitas-ficha-v1';
 const STEPS = [ ['introducao','Introdução'], ['atributos','Atributos'], ['origem','Origem'], ['classe','Classe'], ['autenticacao','Autenticação'] ];
 const freshState = () => ({step:'introducao', attrs:{FOR:1,AGI:1,INT:1,VIG:1,PRE:1},originId:'',originTab:'ordem',classId:'ocultista',classTab:'progressao',skillTab:'habilidades',trackId:'',custom:{origens:[],habilidades:[],rituais:[],trilhas:[],progressao:[]},profile:{nome:'',nex:'5%',aparencia:'',personalidade:'',historico:'',objetivo:'',assinatura:'',assinaturaImg:'',foto:''},options:{nex:false,municao:false,sanidade:false,patente:false},finalizado:false,initials:{},declass:false,attrPoints:4});
@@ -9,8 +8,7 @@ let state = freshState();
 try {const saved=JSON.parse(localStorage.getItem(KEY)); if(saved&&typeof saved==='object'){
   state={...freshState(),...saved,attrs:{...freshState().attrs,...saved.attrs},profile:{...freshState().profile,...saved.profile},options:{...freshState().options,...saved.options},custom:{...freshState().custom,...saved.custom},attrPoints:saved.attrPoints||4};
   if(!STEPS.some(a=>a[0]===state.step))state.step='introducao';
-  console.log('Estado carregado:',state);
-}}catch(e){console.warn('Não foi possível ler o registro local',e);console.log('Usando estado fresco:',state);}
+}}catch(e){console.warn('Não foi possível ler o registro local',e);}
 const $=sel=>document.querySelector(sel);
 const e=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state));const x=$('#save-status');if(x)x.textContent='REGISTRO LOCAL • SALVO AUTOMATICAMENTE';}catch(err){const x=$('#save-status');if(x)x.textContent='ARMAZENAMENTO CHEIO: EXPORTE SEUS DADOS';}};
@@ -115,7 +113,6 @@ ${[['aparencia','Aparência'],['personalidade','Personalidade'],['historico','Hi
 <button class="finalize" type="button" data-finalize="1">${state.finalizado?'DOCUMENTO AUTENTICADO ✓':'FINALIZAR DOCUMENTO'}</button>${state.finalizado?'<p class="finalize-msg">IDENTIDADE REGISTRADA NO ARQUIVO DA ORDEM.</p>':''}
 </article>`;}
 function render(opts={}){nav();const index=STEPS.findIndex(x=>x[0]===state.step);const views={introducao:intro,atributos:attributes,origem:origin,classe:classPage,autenticacao:auth};
-console.log('Renderizando step:',state.step,'index:',index);
 const stage=$('#stage');stage.innerHTML=views[state.step]()+`<button class="arrow-control prev" type="button" aria-label="Etapa anterior" data-go="${STEPS[Math.max(0,index-1)][0]}" ${index===0?'disabled':''}>❮</button><button class="arrow-control next" type="button" aria-label="Próxima etapa" data-go="${STEPS[Math.min(STEPS.length-1,index+1)][0]}" ${index===STEPS.length-1?'disabled':''}>❯</button>`;
 stage.classList.toggle('fresh',!!opts.fresh&&!opts.defer);FX.decorate(stage,state,{save},!!opts.fresh);FX.updateCover({doc:D.documento,finalizado:state.finalizado,nome:state.profile.nome});
 if(opts.fresh&&!opts.defer)FX.arrive(stage);}
