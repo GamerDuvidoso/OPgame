@@ -90,7 +90,7 @@ ${state.classId?`<div class="class-description" tabindex="0" aria-label="Caracte
 <div class="class-stat-grid"><div>Pontos de<br>Esforço Iniciais<br><strong>${e(c.pe)}</strong></div><div>A cada novo<br>nível de exposição<br><strong>${e(c.peNivel)}</strong></div></div><div class="rule-dash" style="margin:5px 0 12px"></div>
 <div class="class-stat-grid"><div>Sanidade<br>Inicial<br><strong>${e(c.san)}</strong></div><div>A cada novo<br>nível de exposição<br><strong>${e(c.sanNivel)}</strong></div></div><div class="rule-dash" style="margin:9px 0 12px"></div>
 <h3>PERÍCIAS TREINADAS</h3><p class="class-rule-text">${e(c.pericias)}</p>
-<p class="class-count">INTELECTO ATUAL: ${e(state.attrs.INT)} ${typeof c.periciasExtrasBase==='number'?`• PERÍCIAS À ESCOLHA: ${c.periciasExtrasBase+state.attrs.INT}`:''}</p>
+<p class="class-count">INTELECTO ATUAL: ${e(state.attrs.INT)} ${typeof c.periciasExtrasBase==='number'?`- PERÍCIAS À ESCOLHA: ${c.periciasExtrasBase+state.attrs.INT}`:''}</p>
 <div class="rule-dash" style="margin:9px 0 12px"></div>
 <h3>PROFICIÊNCIAS</h3><p class="class-rule-text">${e(c.proficiencias)}</p>
 <p class="class-help">Os detalhes de perícias e as escolhas específicas de habilidades poderão ser acrescentados em novos adendos.</p></div>`:'<div class="class-description"><p>${e(c.descricao)}</p><h3>CARACTERÍSTICAS</h3><div class="rule-dash"></div>
@@ -98,7 +98,7 @@ ${state.classId?`<div class="class-description" tabindex="0" aria-label="Caracte
 <div class="class-stat-grid"><div>Pontos de<br>Esforço Iniciais<br><strong>${e(c.pe)}</strong></div><div>A cada novo<br>nível de exposição<br><strong>${e(c.peNivel)}</strong></div></div><div class="rule-dash" style="margin:5px 0 12px"></div>
 <div class="class-stat-grid"><div>Sanidade<br>Inicial<br><strong>${e(c.san)}</strong></div><div>A cada novo<br>nível de exposição<br><strong>${e(c.sanNivel)}</strong></div></div><div class="rule-dash" style="margin:9px 0 12px"></div>
 <h3>PERÍCIAS TREINADAS</h3><p class="class-rule-text">${e(c.pericias)}</p>
-<p class="class-count">INTELECTO ATUAL: ${e(state.attrs.INT)} ${typeof c.periciasExtrasBase==='number'?`• PERÍCIAS À ESCOLHA: ${c.periciasExtrasBase+state.attrs.INT}`:''}</p>
+<p class="class-count">INTELECTO ATUAL: ${e(state.attrs.INT)} ${typeof c.periciasExtrasBase==='number'?`- PERÍCIAS À ESCOLHA: ${c.periciasExtrasBase+state.attrs.INT}`:''}</p>
 <div class="rule-dash" style="margin:9px 0 12px"></div>
 <h3>PROFICIÊNCIAS</h3><p class="class-rule-text">${e(c.proficiencias)}</p>
 <p class="class-help">Os detalhes de perícias e as escolhas específicas de habilidades poderão ser acrescentados em novos adendos.</p></div>'}
