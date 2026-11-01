@@ -3,7 +3,7 @@
 const D = window.ORDO_DADOS;
 const KEY = 'ordo-realitas-ficha-v1';
 const STEPS = [ ['introducao','Introdução'], ['atributos','Atributos'], ['origem','Origem'], ['classe','Classe'], ['autenticacao','Autenticação'] ];
-const freshState = () => ({step:'introducao', attrs:{FOR:1,AGI:1,INT:1,VIG:1,PRE:1},originId:'',originTab:'ordem',classId:'ocultista',classTab:'progressao',skillTab:'habilidades',trackId:'',custom:{origens:[],habilidades:[],rituais:[],trilhas:[],progressao:[]},profile:{nome:'',nex:'5%',aparencia:'',personalidade:'',historico:'',objetivo:'',assinatura:'',assinaturaImg:'',foto:''},options:{nex:false,municao:false,sanidade:false,patente:false},finalizado:false,initials:{},declass:false});
+const freshState = () => ({step:'introducao', attrs:{FOR:1,AGI:1,INT:1,VIG:1,PRE:1},originId:'',originTab:'ordem',classId:'ocultista',classTab:'progressao',skillTab:'habilidades',trackId:'',custom:{origens:[],habilidades:[],rituais:[],trilhas:[],progressao:[]},profile:{nome:'',nex:'5%',aparencia:'',personalidade:'',historico:'',objetivo:'',assinatura:'',assinaturaImg:'',foto:''},options:{nex:false,municao:false,sanidade:false,patente:false},finalizado:false,initials:{},declass:false,attrPoints:4});
 let state = freshState();
 try {const saved=JSON.parse(localStorage.getItem(KEY)); if(saved&&typeof saved==='object'){
   state={...freshState(),...saved,attrs:{...freshState().attrs,...saved.attrs},profile:{...freshState().profile,...saved.profile},options:{...freshState().options,...saved.options},custom:{...freshState().custom,...saved.custom}};
@@ -28,7 +28,7 @@ ${D.introducao.map((m,i)=>`<div class="mission"><span class="ink-label mission-n
 const ATTR_POS=[{id:'FOR',x:135,y:170},{id:'AGI',x:270,y:70},{id:'INT',x:405,y:170},{id:'VIG',x:354,y:322},{id:'PRE',x:186,y:322}];
 const CENTER={x:270,y:218};
 const poly=(k)=> ATTR_POS.map(({x,y})=>`${(CENTER.x+(x-CENTER.x)*k).toFixed(1)},${(CENTER.y+(y-CENTER.y)*k).toFixed(1)}`).join(' ');
-const remaining=()=>9-Object.values(state.attrs).reduce((a,b)=>a+Number(b||0),0);
+const remaining=()=>(state.attrPoints||4)+5-Object.values(state.attrs).reduce((a,b)=>a+Number(b||0),0);
 function radar(editable=true){const lines=`<line x1="135" y1="170" x2="35" y2="170"/><line x1="270" y1="70" x2="343" y2="40"/><line x1="405" y1="170" x2="479" y2="205"/><line x1="354" y1="322" x2="413" y2="373"/><line x1="186" y1="322" x2="126" y2="373"/>`;
 return `<div class="${editable?'attr-chart-wrap':'summary-chart'}">
 <svg class="radar-svg" viewBox="0 0 540 414" aria-hidden="true" preserveAspectRatio="none">
@@ -39,7 +39,7 @@ ${[1,.8,.6,.4,.2].map(k=>`<polygon points="${poly(k)}"/>`).join('')}
 ${ATTR_POS.map(p=>`<div class="stat-node" style="left:${(100*p.x/540).toFixed(2)}%;top:${(100*p.y/414).toFixed(2)}%"><button type="button" class="stat-number" title="${editable?'Clique para aumentar '+p.id+'; clique com botão direito para reduzir':'Atributo '+p.id}" aria-label="${p.id}: ${state.attrs[p.id]}" ${editable?`data-stat-up="${p.id}"`:'disabled'}>${state.attrs[p.id]}</button>${editable?`<span class="stat-adjust"><button type="button" data-stat-down="${p.id}" aria-label="Diminuir ${p.id}">−</button><button type="button" data-stat-up="${p.id}" aria-label="Aumentar ${p.id}">+</button></span>`:''}</div>`).join('')}
 <div class="stat-name for">FOR<small>força</small></div><div class="stat-name agi">AGI<small>agilidade</small></div><div class="stat-name int">INT<small>intelecto</small></div><div class="stat-name vig">VIG<small>vigor</small></div><div class="stat-name pre">PRE<small>presença</small></div>
 </div>`;}
-function attributes(){return `<article class="paper">${head()}<h2 class="type-title attr-title">ATRIBUTOS</h2><div class="rule-dash"></div>${radar(true)}<div class="attribute-instructions"><p>Todos os seus atributos começam em 1 e você recebe 4 pontos para distribuir entre eles como quiser.</p><p>Você também pode reduzir um atributo para 0 para receber 1 ponto adicional. O valor máximo inicial que você pode ter em cada atributo é 3.</p></div><p class="attr-remaining"><strong>Pontos disponíveis: ${remaining()}</strong> • Clique nos números para aumentar. Passe o cursor sobre eles para reduzir.</p><div class="attr-foot"></div></article>
+function attributes(){const points=state.attrPoints||4;return `<article class="paper">${head()}<h2 class="type-title attr-title">ATRIBUTOS</h2><div class="rule-dash"></div>${radar(true)}<div class="attribute-instructions"><p>Todos os seus atributos começam em 1 e você recebe ${points} pontos para distribuir entre eles como quiser.</p><p>Você também pode reduzir um atributo para 0 para receber 1 ponto adicional. O valor máximo inicial que você pode ter em cada atributo é 3.</p></div><p class="attr-remaining"><strong>Pontos disponíveis: ${remaining()}</strong> • Clique nos números para aumentar. Passe o cursor sobre eles para reduzir.</p><div class="attr-foot"></div></article>
 <article class="paper attribute-details">${head()}<h2 class="type-title">Sobre ATRIBUTOS</h2><div class="rule-dash"></div>
 ${D.atributos.map((a,i)=>`<section class="attr-description"><img class="attr-icon" src="${assets(a.icone)}" alt=""><div><span class="ink-label">${i+1}. &nbsp;${e(a.nome)} (${a.id})</span><p>${e(a.descricao)}</p></div></section>`).join('')}</article>`;}
 const allOrigins=()=>[...D.origens,...(state.custom.origens||[]).map(o=>({...o,id:'custom:'+o.id,pericias:o.skills||'A definir',poder:o.power||'A definir'}))];
@@ -64,7 +64,7 @@ if(id==='ordem'){
 if(!state.originId || state.originId!==id)return `<section class="confidential"><div class="stamp">CONFIDENCIAL</div><p>${e((found?.estado)||'ARQUIVO RESTRITO')}</p><button type="button" class="secret-select" data-select-origin="${e(id)}" style="font-size:12px;background:#170e0f;color:#eac6ab;border:0;padding:11px;margin-top:15px">SELECIONAR ORIGEM</button></section>`;
 return `<section class="confidential origin-info-box"><h2>${e(found?.nome)}</h2><p>${e(found?.descricao)}</p><h3>PERÍCIAS TREINADAS</h3><p>${e(found?.pericias)}</p><h3>PODER DE ORIGEM</h3><p>${e(found?.poder)}</p><button type="button" data-select-origin="${e(id)}">ORIGEM SELECIONADA ✓</button></section>`;}
 const CLASSES=['combatente','especialista','ocultista'];
-const currentClass=()=>state.classId?D.classes[state.classId]:{nome:'Sem Classe',progressao:[],habilidades:[],rituais:[],trilhas:[]};
+const currentClass=()=>state.classId?D.classes[state.classId]:{nome:'Sem Classe',pv:'8 + Vigor',pvNivel:'+Vigor',pe:'1 + Presença',peNivel:'+Presença',san:'8',sanNivel:'+2',pericias:'1 perícia à escolha',periciasExtrasBase:1,proficiencias:'Apenas armas simples',descricao:'Você não recebe treinamento específico da Ordo Realitas. Começa com NEX 0% e não tem acesso a habilidades, rituais ou trilhas de classe.',progressao:[],habilidades:[],rituais:[],trilhas:[]};
 function progression(){const c=currentClass();const arr=c.progressao||[];
 if(!state.classId)return `<div class="progress-grid"><p class="not-set">Sem classe selecionada — sem progressão definida.</p></div>`;
 return `<div class="progress-grid"><div class="progress-th">NEX</div><div class="progress-th">PROGRESSÃO: ${e(c.nome.toUpperCase())}</div><div class="progress-th">PE</div>
@@ -91,7 +91,15 @@ ${state.classId?`<div class="class-description" tabindex="0" aria-label="Caracte
 <p class="class-count">INTELECTO ATUAL: ${e(state.attrs.INT)} ${typeof c.periciasExtrasBase==='number'?`• PERÍCIAS À ESCOLHA: ${c.periciasExtrasBase+state.attrs.INT}`:''}</p>
 <div class="rule-dash" style="margin:9px 0 12px"></div>
 <h3>PROFICIÊNCIAS</h3><p class="class-rule-text">${e(c.proficiencias)}</p>
-<p class="class-help">Os detalhes de perícias e as escolhas específicas de habilidades poderão ser acrescentados em novos adendos.</p></div>`:'<div class="class-description"><p>Você não recebe treinamento específico da Ordo Realitas. Começa com NEX 0% e não tem acesso a habilidades, rituais ou trilhas de classe.</p></div>'}
+<p class="class-help">Os detalhes de perícias e as escolhas específicas de habilidades poderão ser acrescentados em novos adendos.</p></div>`:'<div class="class-description"><p>${e(c.descricao)}</p><h3>CARACTERÍSTICAS</h3><div class="rule-dash"></div>
+<div class="class-stat-grid"><div>Pontos de<br>Vida Iniciais<br><strong>${e(c.pv)}</strong></div><div>A cada novo<br>nível de exposição<br><strong>${e(c.pvNivel)}</strong></div></div><div class="rule-dash" style="margin:5px 0 12px"></div>
+<div class="class-stat-grid"><div>Pontos de<br>Esforço Iniciais<br><strong>${e(c.pe)}</strong></div><div>A cada novo<br>nível de exposição<br><strong>${e(c.peNivel)}</strong></div></div><div class="rule-dash" style="margin:5px 0 12px"></div>
+<div class="class-stat-grid"><div>Sanidade<br>Inicial<br><strong>${e(c.san)}</strong></div><div>A cada novo<br>nível de exposição<br><strong>${e(c.sanNivel)}</strong></div></div><div class="rule-dash" style="margin:9px 0 12px"></div>
+<h3>PERÍCIAS TREINADAS</h3><p class="class-rule-text">${e(c.pericias)}</p>
+<p class="class-count">INTELECTO ATUAL: ${e(state.attrs.INT)} ${typeof c.periciasExtrasBase==='number'?`• PERÍCIAS À ESCOLHA: ${c.periciasExtrasBase+state.attrs.INT}`:''}</p>
+<div class="rule-dash" style="margin:9px 0 12px"></div>
+<h3>PROFICIÊNCIAS</h3><p class="class-rule-text">${e(c.proficiencias)}</p>
+<p class="class-help">Os detalhes de perícias e as escolhas específicas de habilidades poderão ser acrescentados em novos adendos.</p></div>'}
 </article><div class="class-library"><div class="library-tabs"><button type="button" data-class-tab="progressao" class="${state.classTab==='progressao'?'active':''}">PROGRESSÃO</button><button type="button" data-class-tab="habilidades" class="${state.classTab==='habilidades'?'active':''}">HABILIDADES</button><button type="button" data-class-tab="trilhas" class="${state.classTab==='trilhas'?'active':''}">TRILHAS</button></div><section class="library-paper">${state.classTab==='progressao'?progression():state.classTab==='habilidades'?abilities():tracks()}</section></div>`;}
 function auth(){const origin=getOrigin();const foto=state.profile.foto;
 return `<article class="paper auth-form">${head()}<h2 class="auth-section-title">REGRAS OPCIONAIS</h2><div class="auth-dash"></div>
@@ -124,7 +132,7 @@ else if(btn.dataset.statUp)changeStat(btn.dataset.statUp,1);
 else if(btn.dataset.statDown)changeStat(btn.dataset.statDown,-1);
 else if(btn.dataset.originTab){state.originTab=btn.dataset.originTab;render();}
 else if(btn.dataset.selectOrigin){selectOrigin(btn.dataset.selectOrigin);}
-else if(btn.dataset.class){state.classId=btn.dataset.class;state.trackId='';render();window.Mesa&&Mesa.log('Classe selecionada: '+currentClass().nome);}
+else if(btn.dataset.class!==undefined){state.classId=btn.dataset.class;state.attrPoints=btn.dataset.class?4:3;state.trackId='';render();window.Mesa&&Mesa.log('Classe selecionada: '+currentClass().nome);}
 else if(btn.dataset.classTab){state.classTab=btn.dataset.classTab;render();}
 else if(btn.dataset.skillTab){state.skillTab=btn.dataset.skillTab;render();}
 else if(btn.dataset.track){state.trackId=btn.dataset.track;render();}
@@ -147,7 +155,7 @@ document.addEventListener('change',ev=>{const el=ev.target;
 if(el.dataset.option){state.options[el.dataset.option]=el.checked;save();}
 if(el.dataset.originSelect){state.originId=el.value;state.originTab=el.value||'ordem';render();}
 if(el.dataset.originSelectDropdown){state.originId=el.value;state.originTab=el.value||'ordem';render();}
-if(el.dataset.classSelect){const newClass=el.value;if(!newClass){state.classId='';state.profile.nex='0%';}else{state.classId=newClass;if(state.profile.nex==='0%')state.profile.nex='5%';}state.trackId='';render();save();}
+if(el.dataset.classSelect){const newClass=el.value;if(!newClass){state.classId='';state.profile.nex='0%';state.attrPoints=3;}else{state.classId=newClass;if(state.profile.nex==='0%')state.profile.nex='5%';state.attrPoints=4;}state.trackId='';render();save();}
 if(el.id==='agent-photo'&&el.files?.[0]){const file=el.files[0];if(file.size>3*1024*1024){toast('Escolha uma imagem menor que 3 MB.');return;}const reader=new FileReader();reader.onload=()=>{state.profile.foto=String(reader.result);render();};reader.readAsDataURL(file);}
 });
 // ADENDOS — dados personalizados sem alteração do layout base
