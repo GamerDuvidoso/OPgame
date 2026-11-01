@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ordo Realitas</title>
+<meta name="theme-color" content="#0c0a09">
+<meta name="description" content="Dossiê confidencial: ficha do agente da Ordo Realitas">
+<link rel="icon" type="image/png" href="assets/emblema-pequeno.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Stardos+Stencil:wght@700&family=Herr+Von+Muellerhoff&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+<link rel="stylesheet" href="imersao.css">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.4 1.95" result="m"/>
+    <feComposite in="SourceGraphic" in2="m" operator="in"/>
+  </filter>
+</svg>
+
+<div class="app-shell">
+  <header class="top-nav" id="navigation" aria-label="Etapas do dossiê"></header>
+  <main class="stage" id="stage" aria-live="polite"></main>
+  <div class="control-bar">
+    <span id="save-status">REGISTRO LOCAL • SALVO AUTOMATICAMENTE</span>
+    <span class="bar-actions">
+      <button type="button" id="sound-toggle" aria-pressed="true">♪ SOM: LIGADO</button>
+      <button type="button" id="close-dossier">▣ FECHAR DOSSIÊ</button>
+      <button type="button" id="open-customizer" aria-haspopup="dialog">⚙ ADENDOS</button>
+    </span>
+  </div>
+</div>
+
+<dialog class="customizer" id="customizer">
+  <div class="customizer-top"><h2>ARQUIVO DE ADENDOS</h2><button id="close-customizer" aria-label="Fechar adendos">✕</button></div>
+  <p>Insira suas próprias origens, habilidades, rituais e trilhas. Os dados são guardados neste navegador e podem ser exportados.</p>
+  <div class="customizer-tools">
+    <button type="button" id="export-data">↓ EXPORTAR FICHA (.JSON)</button>
+    <label class="import-button">↑ IMPORTAR FICHA <input id="import-data" type="file" accept="application/json,.json" hidden></label>
+    <button type="button" id="reset-data" class="danger">REDEFINIR</button>
+  </div>
+  <div class="customizer-grid">
+    <form id="custom-form">
+      <label>SEÇÃO<select name="type" id="custom-type"><option value="origens">Origens</option><option value="habilidades">Habilidades</option><option value="rituais">Rituais</option><option value="trilhas">Trilhas</option><option value="progressao">Progressão de classe</option></select></label>
+      <label>NOME<input name="name" placeholder="Nome do novo conteúdo" required maxlength="90"></label>
+      <label class="custom-class">CLASSE<select name="classId"><option value="combatente">Combatente</option><option value="especialista">Especialista</option><option value="ocultista" selected>Ocultista</option></select></label>
+      <label>DESCRIÇÃO<textarea name="description" rows="5" placeholder="Escreva o texto que deve aparecer na ficha..."></textarea></label>
+      <label class="origin-field">PERÍCIAS TREINADAS<input name="skills" placeholder="Ex.: Investigação, Percepção"></label>
+      <label class="origin-field">PODER DE ORIGEM<input name="power" placeholder="Ex.: Nome do poder e efeito"></label>
+      <label class="ritual-field">CÍRCULO / ELEMENTO<input name="circle" placeholder="Ex.: 1º círculo • Conhecimento"></label><label class="progress-field">NEX<select name="nex"><option value="5%">5%</option><option value="10%">10%</option><option value="15%">15%</option><option value="20%">20%</option><option value="25%">25%</option><option value="30%">30%</option><option value="35%">35%</option><option value="40%">40%</option><option value="45%">45%</option><option value="50%">50%</option><option value="55%">55%</option><option value="60%">60%</option><option value="65%">65%</option><option value="70%">70%</option><option value="75%">75%</option><option value="80%">80%</option><option value="85%">85%</option><option value="90%">90%</option><option value="95%">95%</option><option value="99%">99%</option></select></label>
+      <button type="submit" class="save-custom">+ ADICIONAR AO DOSSIÊ</button>
+    </form>
+    <div class="custom-list-wrap"><h3>ADENDOS REGISTRADOS</h3><div id="custom-list"></div></div>
+  </div>
+  <p class="mini-note">Para editar os textos originais, abra <code>dados.js</code>. Para editar aparência e medidas, abra <code>estilo.css</code> e <code>imersao.css</code>.</p>
+</dialog>
+
+<!-- Capa: dossiê fechado sobre a mesa -->
+<div id="cover">
+  <div class="scene">
+    <div class="folder" id="folder" role="button" tabindex="0" aria-label="Abrir o dossiê confidencial">
+      <div class="folder-inside"><i></i><i></i><i></i></div>
+      <div class="folder-front">
+        <div class="ff">
+          <div class="f-tab"><span>ORDO REALITAS</span></div>
+          <img class="f-emblem" src="assets/emblema-grande.png" alt="">
+          <h1>FICHA DO AGENTE</h1>
+          <div class="f-sticker" id="cover-doc">Nº</div>
+          <div class="f-stamp" id="cover-stamp">CONFIDENCIAL</div>
+          <div class="f-strip" id="cover-status">ACESSO RESTRITO — NÍVEL 3</div>
+          <div class="f-ring"></div>
+        </div>
+        <div class="fb"></div>
+      </div>
+    </div>
+    <p class="cover-hint">Toque no dossiê para abri-lo</p>
+  </div>
+</div>
+
+<!-- Final cinematográfico -->
+<div id="finale" hidden>
+  <div class="finale-inner">
+    <img src="assets/emblema-grande.png" alt="" class="finale-emblem">
+    <div id="finale-lines" aria-live="polite"></div>
+    <div id="finale-actions" hidden>
+      <button type="button" id="finale-back">REVER A FICHA</button>
+      <button type="button" id="finale-close">FECHAR O DOSSIÊ</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<canvas id="dust" aria-hidden="true"></canvas>
+<div id="lamp" aria-hidden="true"></div>
+<div id="grain" aria-hidden="true"></div>
+
+<script src="dados.js"></script>
+<script src="imersao.js"></script>
+<script src="app.js"></script>
